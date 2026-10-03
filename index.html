@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hive Personal Archive</title><style>
 :root{--bg:#151412;--panel:#211f1b;--panel2:#292621;--text:#f5efe5;--muted:#aaa196;--line:#3a352d;--accent:#d5a46b;--bad:#e78b8b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1150px;margin:auto;padding:28px}h1{margin:0 0 5px;font-size:30px}.muted{color:var(--muted)}.top{display:flex;gap:10px;margin:20px 0}.top input{flex:1}input,button,select{padding:11px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit}button{cursor:pointer}button.primary{background:var(--accent);color:#191510;font-weight:700}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.stat{background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:10px}.stat b{display:block;font-size:24px}.grid{display:grid;grid-template-columns:260px 1fr;gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.side input,.side select,.side button{width:100%;margin:5px 0}.year-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.post{margin:10px 0;padding:15px;background:var(--panel2);border-radius:10px}.post a{color:var(--text);font-weight:700;text-decoration:none}.post a:hover{color:var(--accent)}.meta{font-size:12px;color:var(--muted);margin-top:5px}.excerpt{margin-top:8px;color:#ccc;line-height:1.5}.tags{color:var(--accent);font-size:12px;margin-top:8px}.status{padding:10px;background:var(--panel2);border-radius:9px;margin-bottom:10px}.error{color:var(--bad)}.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:14px}@media(max-width:700px){main{padding:16px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.top{flex-wrap:wrap}.top input{width:100%}}
-</style></head><body><main><h1>🗄️ Hive Personal Archive</h1><p class="muted">Search and explore a public Hive account's writing history.</p><div class="top"><input id="account" placeholder="Hive username, e.g. hivebookclub"><button id="load" class="primary">Load 10/15</button><button id="next">Next batch</button><button id="auto">Auto load</button><button id="pause">Pause</button><button id="stop">Stop</button></div><div class="stats"><div class="stat"><b id="postCount">—</b>Posts</div><div class="stat"><b id="yearCount">—</b>Years</div><div class="stat"><b id="tagCount">—</b>Tags</div><div class="stat"><b id="nodeName">—</b>API node</div></div><div class="grid"><aside class="card"><b>Hive API node</b><select id="node"><option value="auto">Auto / failover</option><option value="https://api.hive.blog">api.hive.blog</option><option value="https://api.openhive.network">api.openhive.network</option><option value="https://anyx.io">anyx.io</option><option value="https://api.deathwing.me">api.deathwing.me</option><option value="https://hive.roelandp.nl">hive.roelandp.nl</option></select><b>Batch size</b><select id="batchSize"><option value="10">10 posts</option><option value="15">15 posts</option></select><b>Search</b><input id="search" placeholder="Search posts"><b>Year range</b><div class="year-row"><input id="yearFrom" type="number" placeholder="From"><input id="yearTo" type="number" placeholder="To"></div><b>Tag</b><select id="tag"><option value="">All tags</option></select><button id="json">Export JSON</button><button id="md">Export Markdown</button><button id="clear">Clear</button><div class="notice">Public Hive data only. No private keys. The loader fetches only 10 or 15 posts per batch. Use Next batch for controlled loading, or Auto load with Pause/Stop.</div></aside><section class="card"><div id="status" class="status">Enter a Hive username to begin.</div><div id="progress" class="muted"></div><div id="list"><p class="muted">Your posts will appear here.</p></div></section></div></main><script>
+</style></head><body><main><h1>🗄️ Hive Personal Archive</h1><p class="muted">Search and explore a public Hive account's writing history.</p><div class="top"><input id="account" placeholder="Hive username, e.g. hivebookclub"><button id="load" class="primary">Load 10/15</button><button id="next">Next batch</button><button id="auto">Auto load</button><button id="pause">Pause</button><button id="stop">Stop</button></div><div class="stats"><div class="stat"><b id="postCount">—</b>Posts</div><div class="stat"><b id="yearCount">—</b>Years</div><div class="stat"><b id="tagCount">—</b>Tags</div><div class="stat"><b id="nodeName">—</b>API node</div></div><div class="grid"><aside class="card"><b>Hive API node</b><select id="node"><option value="auto">Auto / failover</option><option value="https://api.hive.blog">api.hive.blog</option><option value="https://api.openhive.network">api.openhive.network</option><option value="https://anyx.io">anyx.io</option><option value="https://api.deathwing.me">api.deathwing.me</option><option value="https://hive.roelandp.nl">hive.roelandp.nl</option></select><button id="testApi" type="button">Test API</button><b>Batch size</b><select id="batchSize"><option value="10">10 posts</option><option value="15">15 posts</option></select><b>Search</b><input id="search" placeholder="Search posts"><b>Year range</b><div class="year-row"><input id="yearFrom" type="number" placeholder="From"><input id="yearTo" type="number" placeholder="To"></div><b>Tag</b><select id="tag"><option value="">All tags</option></select><button id="json">Export JSON</button><button id="md">Export Markdown</button><button id="clear">Clear</button><div class="notice">Public Hive data only. No private keys. The loader fetches only 10 or 15 posts per batch. Use Next batch for controlled loading, or Auto load with Pause/Stop.</div></aside><section class="card"><div id="status" class="status">Enter a Hive username to begin.</div><div id="progress" class="muted"></div><div id="list"><p class="muted">Your posts will appear here.</p></div></section></div></main><script>
 "use strict";
 const NODES=["https://api.hive.blog","https://api.openhive.network","https://anyx.io","https://api.deathwing.me","https://hive.roelandp.nl"];
 let posts=[],account="",startAuthor="",startPermlink="",finished=false,paused=false,stopped=false,autoRunning=false;
@@ -10,53 +10,332 @@ function setStatus(m,bad=false){$("status").textContent=m;$("status").className=
 function nodeList(){const v=$("node").value;return v==="auto"?NODES:[v,...NODES.filter(n=>n!==v)];}
 async function rpc(method,params){
  let last="Unknown API error";
+
  for(const node of nodeList()){
   try{
    setStatus("Connecting to "+new URL(node).hostname+" …");
-   const c=new AbortController(),timer=setTimeout(()=>c.abort(),15000);
-   const r=await fetch(node,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",method,params,id:1}),signal:c.signal});
+
+   const c=new AbortController();
+   const timer=setTimeout(()=>c.abort(),15000);
+
+   const r=await fetch(node,{
+     method:"POST",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({
+       jsonrpc:"2.0",
+       method,
+       params,
+       id:1
+     }),
+     signal:c.signal
+   });
+
    clearTimeout(timer);
+
    if(!r.ok) throw new Error("HTTP "+r.status);
+
    const j=await r.json();
-   if(j.error) throw new Error(j.error.message||"Hive RPC error");
-   $("nodeName").textContent=new URL(node).hostname;
+
+   if(j.error){
+     throw new Error(
+       j.error.message ||
+       ("Hive RPC error for "+method)
+     );
+   }
+
+   $("nodeName").textContent=
+     new URL(node).hostname;
+
    return j.result;
-  }catch(e){last=e.name==="AbortError"?"timeout":e.message;console.warn(node,last);}
+
+  }catch(e){
+   last=e.name==="AbortError"
+     ?"request timed out"
+     :e.message;
+
+   console.warn(
+     "Hive node failed:",
+     node,
+     last
+   );
+  }
  }
- throw new Error(last+" — all selected Hive nodes failed");
+
+ throw new Error(
+   last+
+   " — all selected Hive nodes failed"
+ );
 }
+
+async function testAPI(){
+ try{
+   const result=await rpc(
+     "condenser_api.get_dynamic_global_properties",
+     []
+   );
+
+   if(result){
+     setStatus(
+       "Hive API connection works."
+     );
+     $("progress").textContent=
+       "Connected to "+
+       $("nodeName").textContent;
+   }
+ }catch(e){
+   setStatus(
+     "API test failed: "+e.message,
+     true
+   );
+ }
+}
+
 async function ensureAccount(){
  if(account) return true;
- account=$("account").value.trim().replace(/^@/,"").toLowerCase();
- if(!account){setStatus("Enter a Hive username first.",true);return false;}
+
+ account=$("account").value
+   .trim()
+   .replace(/^@/,"")
+   .toLowerCase();
+
+ if(!account){
+   setStatus(
+     "Enter a Hive username first.",
+     true
+   );
+   return false;
+ }
+
  try{
-  setStatus("Checking @"+account+" …");
-  const profile=await rpc("bridge.get_profile",{account});
-  if(!profile || profile.name!==account) throw new Error("Hive account not found: @"+account);
-  return true;
- }catch(e){setStatus("Could not load: "+e.message,true);return false;}
+   setStatus(
+     "Checking @"+account+" …"
+   );
+
+   const profile=await rpc(
+     "bridge.get_profile",
+     {account:account}
+   );
+
+   if(!profile){
+     throw new Error(
+       "Account not found: @"+account
+     );
+   }
+
+   return true;
+
+ }catch(e){
+
+   setStatus(
+     "Could not verify account: "+
+     e.message,
+     true
+   );
+
+   return false;
+ }
 }
+
 async function loadBatch(){
- if(finished || stopped){setStatus(finished?"Archive is complete.":"Loading is stopped. Click Load 10/15 to start again.");return false;}
- if(paused){setStatus("Paused. Click Resume to continue.");return false;}
- if(!(await ensureAccount())) return false;
- const limit=Number($("batchSize").value)||10;
+
+ if(finished || stopped){
+   setStatus(
+     finished
+       ? "Archive is complete."
+       : "Loading is stopped. Click Load 10/15 to start again."
+   );
+   return false;
+ }
+
+ if(paused){
+   setStatus(
+     "Paused. Click Resume to continue."
+   );
+   return false;
+ }
+
+ if(!(await ensureAccount()))
+   return false;
+
+ const limit=
+   Number($("batchSize").value)||10;
+
  try{
-  setStatus(`Loading ${limit} posts…`);
-  const batch=await rpc("bridge.get_account_posts",{sort:"posts",account,start_author:startAuthor,start_permlink:startPermlink,limit});
-  if(!Array.isArray(batch)||batch.length===0){finished=true;setStatus(`Archive complete — ${posts.length} posts loaded.`);$("progress").textContent="No more posts returned by Hive.";updateFilters();render();return false;}
-  for(const p of batch) if(p.author===account && p.parent_author==="") posts.push(p);
-  const last=batch[batch.length-1];
-  if(!last||!last.author||!last.permlink){finished=true;}
-  else if(last.author===startAuthor && last.permlink===startPermlink){finished=true;}
-  else {startAuthor=last.author;startPermlink=last.permlink;}
-  if(batch.length<limit) finished=true;
-  updateFilters();render();
-  $("progress").textContent=`Loaded ${posts.length} posts. ${finished?"Archive complete.":"Ready for next batch."}`;
-  setStatus(finished?`Archive complete — ${posts.length} posts loaded.`:`Loaded ${batch.length} more. ${posts.length} total.`);
-  return !finished;
- }catch(e){setStatus("Could not load: "+e.message,true);$("progress").textContent="Loading paused because the request failed.";return false;}
+
+   setStatus(
+     "Loading "+limit+" posts from @"+account+" …"
+   );
+
+   /*
+     Primary method: Bridge.
+     We intentionally omit empty pagination
+     parameters on the first request.
+   */
+
+   const params={
+     sort:"posts",
+     account:account,
+     limit:limit,
+     observer:account
+   };
+
+   if(startAuthor && startPermlink){
+     params.start_author=startAuthor;
+     params.start_permlink=startPermlink;
+   }
+
+   let batch;
+
+   try{
+
+     batch=await rpc(
+       "bridge.get_account_posts",
+       params
+     );
+
+   }catch(bridgeError){
+
+     /*
+       Compatibility fallback:
+       Hivemind's condenser blog endpoint
+       is still publicly routed and documented.
+     */
+
+     setStatus(
+       "Bridge unavailable. Trying compatibility API …"
+     );
+
+     const blogParams={
+       tag:account,
+       start_author:startAuthor || "",
+       start_permlink:startPermlink || "",
+       limit:limit,
+       observer:account,
+       truncate_body:100000
+     };
+
+     batch=await rpc(
+       "condenser_api.get_discussions_by_blog",
+       [blogParams]
+     );
+   }
+
+   if(
+     !Array.isArray(batch) ||
+     batch.length===0
+   ){
+
+     finished=true;
+
+     setStatus(
+       "No more posts found. "+
+       posts.length+
+       " posts loaded."
+     );
+
+     $("progress").textContent=
+       "Archive complete.";
+
+     updateFilters();
+     render();
+
+     return false;
+   }
+
+   /*
+     Keep only top-level posts authored by
+     the requested account.
+   */
+
+   const before=posts.length;
+
+   for(const post of batch){
+
+     if(
+       post &&
+       post.author===account &&
+       (!post.parent_author ||
+        post.parent_author==="")
+     ){
+
+       /*
+         Avoid duplicates if a fallback or
+         node switch repeats the last page.
+       */
+
+       const duplicate=
+         posts.some(
+           x =>
+             x.author===post.author &&
+             x.permlink===post.permlink
+         );
+
+       if(!duplicate)
+         posts.push(post);
+     }
+   }
+
+   const last=batch[batch.length-1];
+
+   if(
+     !last ||
+     !last.author ||
+     !last.permlink
+   ){
+
+     finished=true;
+
+   }else if(
+     last.author===startAuthor &&
+     last.permlink===startPermlink
+   ){
+
+     finished=true;
+
+   }else{
+
+     startAuthor=last.author;
+     startPermlink=last.permlink;
+
+   }
+
+   if(batch.length<limit)
+     finished=true;
+
+   updateFilters();
+   render();
+
+   const added=
+     posts.length-before;
+
+   $("progress").textContent=
+     "Received "+batch.length+
+     " records; added "+added+
+     " posts. Total: "+posts.length+
+     (finished?" — complete.":" — ready for next batch.");
+
+   setStatus(
+     finished
+       ? "Archive complete — "+posts.length+" posts loaded."
+       : "Loaded "+added+" new posts."
+   );
+
+   return !finished;
+
+ }catch(e){
+
+   setStatus(
+     "Could not load: "+e.message,
+     true
+   );
+
+   $("progress").textContent=
+     "Nothing was added. You can switch API nodes and try again.";
+
+   return false;
+ }
 }
+
 async function startFresh(){
  posts=[];startAuthor="";startPermlink="";finished=false;stopped=false;paused=false;autoRunning=false;
  $("list").innerHTML="";$("postCount").textContent="0";$("yearCount").textContent="0";$("tagCount").textContent="0";
@@ -105,6 +384,7 @@ $("account").addEventListener("keydown",e=>{if(e.key==="Enter")startFresh();});
 ["search","yearFrom","yearTo"].forEach(id=>$(id).addEventListener("input",render));
 $("tag").addEventListener("change",render);
 $("node").addEventListener("change",()=>localStorage.setItem("hiveArchiveNode",$("node").value));
+$("testApi").addEventListener("click",testAPI);
 $("json").addEventListener("click",exportJSON);$("md").addEventListener("click",exportMarkdown);
 $("clear").addEventListener("click",()=>location.reload());
 const saved=localStorage.getItem("hiveArchiveNode");if(saved&&["auto",...NODES].includes(saved))$("node").value=saved;
