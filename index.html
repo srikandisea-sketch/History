@@ -4,134 +4,1297 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hive Personal Archive</title>
+
 <style>
-:root{--bg:#151412;--panel:#211f1b;--panel2:#292621;--text:#f5efe5;--muted:#aaa196;--line:#3a352d;--accent:#d5a46b}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
-main{max-width:1180px;margin:auto;padding:28px}.top{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}
-h1{margin:0;font-size:30px}.sub{color:var(--muted);margin-top:5px}.search{display:flex;gap:8px}.search input{width:280px}
-input,select,button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px;font:inherit}
-button{cursor:pointer}button.primary{background:var(--accent);color:#191510;border-color:var(--accent);font-weight:700}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.stat b{font-size:24px;display:block}.stat span{color:var(--muted);font-size:12px}
-.layout{display:grid;grid-template-columns:260px 1fr;gap:16px}.card h2{font-size:15px;margin:0 0 12px}.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.list{display:grid;gap:10px}.post{padding:14px;background:var(--panel2);border:1px solid var(--line);border-radius:12px}.post a{color:var(--text);text-decoration:none;font-weight:700}.meta{color:var(--muted);font-size:12px;margin-top:5px}.excerpt{color:#c9c1b7;margin-top:8px;line-height:1.5}.tags{color:var(--accent);font-size:12px;margin-top:8px}.empty{padding:30px;text-align:center;color:var(--muted)}
-.side input{width:100%;margin-bottom:8px}.side button{width:100%}.notice{color:var(--muted);line-height:1.5;font-size:13px;margin-top:12px}
-@media(max-width:800px){.top{display:block}.search{margin-top:14px}.search input{width:100%;flex:1}.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}
+:root{
+  --bg:#151412;
+  --panel:#211f1b;
+  --panel2:#292621;
+  --text:#f5efe5;
+  --muted:#aaa196;
+  --line:#3a352d;
+  --accent:#d5a46b;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+main{
+  max-width:1150px;
+  margin:auto;
+  padding:28px;
+}
+
+h1{
+  margin:0 0 5px;
+  font-size:30px;
+}
+
+h2{
+  margin-top:0;
+}
+
+input,
+button,
+select{
+  padding:11px;
+  border-radius:9px;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--text);
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+button:hover{
+  border-color:var(--accent);
+}
+
+button.primary{
+  background:var(--accent);
+  color:#191510;
+  font-weight:bold;
+}
+
+.top{
+  display:flex;
+  gap:10px;
+  margin:20px 0;
+}
+
+.top input{
+  flex:1;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:16px;
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:16px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.stat{
+  background:var(--panel2);
+  padding:14px;
+  border-radius:10px;
+}
+
+.stat b{
+  display:block;
+  font-size:24px;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+.side input,
+.side select,
+.side button{
+  width:100%;
+  margin:5px 0;
+}
+
+.year-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.post{
+  margin:10px 0;
+  padding:15px;
+  background:var(--panel2);
+  border-radius:10px;
+  border:1px solid transparent;
+}
+
+.post:hover{
+  border-color:var(--line);
+}
+
+.post a{
+  color:var(--text);
+  font-weight:bold;
+  text-decoration:none;
+}
+
+.post a:hover{
+  color:var(--accent);
+}
+
+.meta{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:5px;
+}
+
+.excerpt{
+  margin-top:8px;
+  color:#ccc;
+  line-height:1.5;
+}
+
+.tags{
+  color:var(--accent);
+  font-size:12px;
+  margin-top:8px;
+}
+
+.notice{
+  margin-top:15px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.status{
+  margin-bottom:12px;
+}
+
+.progress{
+  color:var(--accent);
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+@media(max-width:700px){
+
+  main{
+    padding:16px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .top{
+    flex-wrap:wrap;
+  }
+
+  .top input{
+    width:100%;
+    flex:auto;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <main>
-  <header class="top">
-    <div><h1>🗄️ Hive Personal Archive</h1><div class="sub">Search and explore a public Hive account's writing history.</div></div>
-    <div class="search"><input id="account" placeholder="Hive username, e.g. macchiata"><button class="primary" onclick="loadArchive()">Load archive</button></div>
-  </header>
 
-  <section class="stats">
-    <div class="stat"><b id="postCount">—</b><span>Posts loaded</span></div>
-    <div class="stat"><b id="commentCount">—</b><span>Replies loaded</span></div>
-    <div class="stat"><b id="yearCount">—</b><span>Years represented</span></div>
-    <div class="stat"><b id="tagCount">—</b><span>Unique tags</span></div>
-  </section>
+<h1>🗄️ Hive Personal Archive</h1>
 
-  <div class="layout">
-    <aside class="card side">
-      <h2>Archive controls</h2>
-      <input id="search" placeholder="Search title or text" oninput="render()">
-      <select id="year" onchange="render()"><option value="">All years</option></select>
-      <select id="tag" onchange="render()"><option value="">All tags</option></select>
-      <button onclick="exportJSON()">Export JSON</button>
-      <button onclick="exportMarkdown()">Export Markdown</button>
-      <div class="notice">This MVP reads public Hive data. It does not request or store your Hive keys.</div>
-    </aside>
+<p class="muted">
+Search and explore a public Hive account's writing history.
+</p>
 
-    <section class="card">
-      <div class="filters"><strong id="heading">Your archive</strong><span id="status" class="meta"></span></div>
-      <div id="list" class="list"><div class="empty">Enter a Hive username to begin.</div></div>
-    </section>
+<div class="top">
+  <input
+    id="account"
+    placeholder="@username"
+    autocomplete="off"
+  >
+
+  <button class="primary" onclick="loadArchive()">
+    Load Archive
+  </button>
+</div>
+
+<div class="stats">
+
+  <div class="stat">
+    <b id="postCount">—</b>
+    <span>Posts</span>
   </div>
+
+  <div class="stat">
+    <b id="yearCount">—</b>
+    <span>Years</span>
+  </div>
+
+  <div class="stat">
+    <b id="tagCount">—</b>
+    <span>Tags</span>
+  </div>
+
+  <div class="stat">
+    <b id="nodeName">—</b>
+    <span>API node</span>
+  </div>
+
+</div>
+
+<div class="grid">
+
+<aside class="card">
+
+<h2>Filters</h2>
+
+<label>Hive API node</label>
+
+<select id="node" onchange="saveNode()">
+
+  <option value="auto">
+    Auto / failover
+  </option>
+
+  <option value="https://api.hive.blog">
+    api.hive.blog
+  </option>
+
+  <option value="https://api.openhive.network">
+    api.openhive.network
+  </option>
+
+  <option value="https://anyx.io">
+    anyx.io
+  </option>
+
+  <option value="https://api.deathwing.me">
+    api.deathwing.me
+  </option>
+
+  <option value="https://hive.roelandp.nl">
+    hive.roelandp.nl
+  </option>
+
+</select>
+
+<label>Search</label>
+
+<input
+  id="search"
+  placeholder="Search your posts..."
+  oninput="render()"
+>
+
+<label>Year range</label>
+
+<div class="year-row">
+
+  <input
+    id="yearFrom"
+    type="number"
+    placeholder="From"
+    min="1"
+    max="9999"
+    oninput="render()"
+  >
+
+  <input
+    id="yearTo"
+    type="number"
+    placeholder="To"
+    min="1"
+    max="9999"
+    oninput="render()"
+  >
+
+</div>
+
+<label>Tag</label>
+
+<select id="tag" onchange="render()">
+
+  <option value="">
+    All tags
+  </option>
+
+</select>
+
+<br>
+
+<button onclick="exportJSON()">
+  Export JSON
+</button>
+
+<button onclick="exportMarkdown()">
+  Export Markdown
+</button>
+
+<button onclick="clearArchive()">
+  Clear
+</button>
+
+<div class="notice">
+
+  Public Hive data only.<br>
+  No private keys are requested or stored.
+
+  <br><br>
+
+  The archive keeps loading pages until Hive reports that there are no more posts.
+
+</div>
+
+</aside>
+
+<section class="card">
+
+<div class="status">
+  <strong id="status">
+    Enter a Hive username to begin.
+  </strong>
+</div>
+
+<div
+  id="progress"
+  class="progress"
+></div>
+
+<div id="list">
+
+  <p class="muted">
+    Your posts will appear here.
+  </p>
+
+</div>
+
+</section>
+
+</div>
+
 </main>
 
 <script>
-const RPC="https://api.hive.blog";
-let posts=[], account="";
+
+/* =========================================================
+   HIVE API NODES
+========================================================= */
+
+const NODES = [
+
+  "https://api.hive.blog",
+
+  "https://api.openhive.network",
+
+  "https://anyx.io",
+
+  "https://api.deathwing.me",
+
+  "https://hive.roelandp.nl"
+
+];
+
+let posts = [];
+
+let account = "";
+
+let activeNode = "";
+
+
+/* =========================================================
+   NODE SELECTION
+========================================================= */
+
+function getNodes(){
+
+  const selected =
+    document.getElementById("node").value;
+
+  if(selected === "auto"){
+
+    return [...NODES];
+
+  }
+
+  return [
+    selected,
+    ...NODES.filter(
+      node => node !== selected
+    )
+  ];
+}
+
+
+function saveNode(){
+
+  localStorage.setItem(
+    "hiveArchiveNode",
+    document.getElementById("node").value
+  );
+
+}
+
+
+function initNode(){
+
+  const saved =
+    localStorage.getItem("hiveArchiveNode");
+
+  if(
+    saved &&
+    ["auto", ...NODES].includes(saved)
+  ){
+
+    document.getElementById("node").value =
+      saved;
+
+  }
+
+}
+
+
+/* =========================================================
+   HIVE RPC
+========================================================= */
 
 async function rpc(method, params){
-  const r=await fetch(RPC,{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({jsonrpc:"2.0",method,params,id:1})});
-  const j=await r.json();
-  if(j.error) throw new Error(j.error.message||"Hive API error");
-  return j.result;
+
+  let lastError = null;
+
+  for(const node of getNodes()){
+
+    try{
+
+      setStatus(
+        "Connecting to " +
+        new URL(node).hostname +
+        "..."
+      );
+
+      const controller =
+        new AbortController();
+
+      const timeout =
+        setTimeout(
+          () => controller.abort(),
+          15000
+        );
+
+      const response =
+        await fetch(
+          node,
+          {
+            method:"POST",
+
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
+
+            body:JSON.stringify({
+
+              jsonrpc:"2.0",
+
+              method:method,
+
+              params:params,
+
+              id:1
+
+            }),
+
+            signal:controller.signal
+          }
+        );
+
+      clearTimeout(timeout);
+
+      if(!response.ok){
+
+        throw new Error(
+          "HTTP " +
+          response.status
+        );
+
+      }
+
+      const json =
+        await response.json();
+
+      if(json.error){
+
+        throw new Error(
+          json.error.message ||
+          "Hive API error"
+        );
+
+      }
+
+      activeNode = node;
+
+      document.getElementById("nodeName")
+        .textContent =
+        new URL(node).hostname;
+
+      return json.result;
+
+    }
+    catch(error){
+
+      lastError = error;
+
+      console.warn(
+        "Hive node failed:",
+        node,
+        error
+      );
+
+    }
+
+  }
+
+  throw (
+    lastError ||
+    new Error(
+      "No Hive API node is available."
+    )
+  );
+
 }
+
+
+/* =========================================================
+   LOAD COMPLETE ACCOUNT ARCHIVE
+========================================================= */
 
 async function loadArchive(){
-  account=document.getElementById("account").value.trim().replace(/^@/,"").toLowerCase();
-  if(!account)return;
-  setStatus("Loading…");
-  posts=[];
+
+  account =
+    document
+      .getElementById("account")
+      .value
+      .trim()
+      .replace(/^@/,"")
+      .toLowerCase();
+
+  if(!account){
+
+    alert(
+      "Enter a Hive username first."
+    );
+
+    return;
+
+  }
+
+  posts = [];
+
+  document.getElementById("list")
+    .innerHTML = "";
+
+  setStatus(
+    "Starting archive..."
+  );
+
+  document.getElementById("progress")
+    .textContent = "";
+
+  /*
+     Hive bridge.get_account_posts
+     currently accepts limit 1–20.
+  */
+
+  let startAuthor = "";
+
+  let startPermlink = "";
+
+  let page = 0;
+
   try{
-    // bridge.get_account_posts supports pagination with start_author/start_permlink.
-    let start_author="", start_permlink="";
-    for(let page=0;page<20;page++){
-      const batch=await rpc("bridge.get_account_posts",{
-        sort:"posts",account,start_author,start_permlink,limit:20,observer:account
-      });
-      if(!Array.isArray(batch)||!batch.length)break;
-      posts.push(...batch.filter(x=>x.author===account && x.parent_author===""));
-      const last=batch[batch.length-1];
-      if(!last || !last.author || !last.permlink)break;
-      if(last.author===start_author && last.permlink===start_permlink)break;
-      start_author=last.author; start_permlink=last.permlink;
-      if(batch.length<100)break;
+
+    while(true){
+
+      page++;
+
+      document.getElementById(
+        "progress"
+      ).textContent =
+        "Loading archive page " +
+        page +
+        "...";
+
+      const batch =
+        await rpc(
+          "bridge.get_account_posts",
+          {
+            sort:"posts",
+
+            account:account,
+
+            start_author:
+              startAuthor,
+
+            start_permlink:
+              startPermlink,
+
+            limit:20,
+
+            observer:account
+          }
+        );
+
+      if(
+        !Array.isArray(batch) ||
+        batch.length === 0
+      ){
+
+        break;
+
+      }
+
+      const authored =
+        batch.filter(
+          post =>
+            post.author === account &&
+            post.parent_author === ""
+        );
+
+      posts.push(...authored);
+
+      const last =
+        batch[batch.length - 1];
+
+      if(!last){
+
+        break;
+
+      }
+
+      /*
+        Prevent an infinite loop.
+      */
+
+      if(
+        last.author === startAuthor &&
+        last.permlink === startPermlink
+      ){
+
+        break;
+
+      }
+
+      startAuthor =
+        last.author;
+
+      startPermlink =
+        last.permlink;
+
+      /*
+        If fewer than 20 records were
+        returned, we've reached the end.
+      */
+
+      if(batch.length < 20){
+
+        break;
+
+      }
+
+      /*
+        Small pause so we don't hammer
+        a public API node.
+      */
+
+      await sleep(100);
+
     }
-    updateControls(); render();
-    setStatus(`${posts.length} posts loaded`);
-  }catch(e){setStatus("Could not load: "+e.message);document.getElementById("list").innerHTML='<div class="empty">Check the username and try again.</div>';}
+
+    updateFilters();
+
+    render();
+
+    setStatus(
+      posts.length +
+      " posts loaded"
+    );
+
+    document.getElementById(
+      "progress"
+    ).textContent =
+      "Archive complete.";
+
+  }
+  catch(error){
+
+    setStatus(
+      "Could not load: " +
+      error.message
+    );
+
+    document.getElementById(
+      "progress"
+    ).textContent =
+      "The API request stopped.";
+
+  }
+
 }
 
-function setStatus(x){document.getElementById("status").textContent=x}
 
-function updateControls(){
-  const years=[...new Set(posts.map(p=>new Date(p.created).getFullYear()).filter(Boolean))].sort((a,b)=>b-a);
-  const tags=[...new Set(posts.flatMap(p=>p.json_metadata?.tags||[]).filter(t=>typeof t==="string"))].sort();
-  document.getElementById("year").innerHTML='<option value="">All years</option>'+years.map(y=>`<option>${y}</option>`).join("");
-  document.getElementById("tag").innerHTML='<option value="">All tags</option>'+tags.map(t=>`<option>${esc(t)}</option>`).join("");
-  document.getElementById("postCount").textContent=posts.length;
-  document.getElementById("commentCount").textContent="—";
-  document.getElementById("yearCount").textContent=years.length;
-  document.getElementById("tagCount").textContent=tags.length;
+/* =========================================================
+   FILTERS
+========================================================= */
+
+function updateFilters(){
+
+  const years =
+    [
+      ...new Set(
+        posts
+          .map(
+            post =>
+              new Date(
+                post.created
+              ).getFullYear()
+          )
+          .filter(Boolean)
+      )
+    ]
+    .sort(
+      (a,b) => a-b
+    );
+
+  const tags =
+    [
+      ...new Set(
+        posts.flatMap(
+          post =>
+            post.json_metadata?.tags || []
+        )
+        .filter(
+          tag =>
+            typeof tag === "string"
+        )
+      )
+    ]
+    .sort();
+
+  document.getElementById(
+    "postCount"
+  ).textContent =
+    posts.length;
+
+  document.getElementById(
+    "yearCount"
+  ).textContent =
+    years.length;
+
+  document.getElementById(
+    "tagCount"
+  ).textContent =
+    tags.length;
+
+  /*
+    We don't restrict the year inputs to
+    the years found in the archive.
+
+    That means you can type:
+    2017
+    2018
+    2030
+    etc.
+
+    The archive simply returns zero
+    results when there is no data.
+  */
+
+  document.getElementById(
+    "tag"
+  ).innerHTML =
+    '<option value="">All tags</option>' +
+
+    tags
+      .map(
+        tag =>
+          `<option value="${esc(tag)}">
+             ${esc(tag)}
+           </option>`
+      )
+      .join("");
+
 }
+
+
+/* =========================================================
+   RENDER
+========================================================= */
 
 function render(){
-  const q=document.getElementById("search").value.toLowerCase();
-  const y=document.getElementById("year").value;
-  const t=document.getElementById("tag").value;
-  const filtered=posts.filter(p=>{
-    const text=(p.title+" "+strip(p.body)).toLowerCase();
-    const tags=p.json_metadata?.tags||[];
-    return (!q||text.includes(q))&&(!y||new Date(p.created).getFullYear()==y)&&(!t||tags.includes(t));
-  });
-  document.getElementById("heading").textContent=`${filtered.length} matching posts`;
-  document.getElementById("list").innerHTML=filtered.length?filtered.map(p=>{
-    const url=`https://peakd.com/@${p.author}/${p.permlink}`;
-    const tags=(p.json_metadata?.tags||[]).slice(0,6).map(esc).join(" · ");
-    return `<article class="post"><a href="${url}" target="_blank" rel="noopener">${esc(p.title||"(untitled)")}</a>
-      <div class="meta">${new Date(p.created).toLocaleDateString()} · ${p.category||""}</div>
-      <div class="excerpt">${esc(strip(p.body).slice(0,280))}${strip(p.body).length>280?"…":""}</div>
-      <div class="tags">${tags}</div></article>`;
-  }).join(""):'<div class="empty">No posts match your filters.</div>';
+
+  const search =
+    document
+      .getElementById("search")
+      .value
+      .toLowerCase()
+      .trim();
+
+  const fromValue =
+    document
+      .getElementById("yearFrom")
+      .value
+      .trim();
+
+  const toValue =
+    document
+      .getElementById("yearTo")
+      .value
+      .trim();
+
+  const fromYear =
+    fromValue
+      ? Number(fromValue)
+      : null;
+
+  const toYear =
+    toValue
+      ? Number(toValue)
+      : null;
+
+  const selectedTag =
+    document
+      .getElementById("tag")
+      .value;
+
+  let filtered =
+    posts.filter(post => {
+
+      const year =
+        new Date(
+          post.created
+        ).getFullYear();
+
+      const text =
+        (
+          (post.title || "") +
+          " " +
+          strip(post.body || "")
+        )
+        .toLowerCase();
+
+      const tags =
+        post.json_metadata?.tags || [];
+
+      if(
+        search &&
+        !text.includes(search)
+      ){
+
+        return false;
+
+      }
+
+      if(
+        fromYear !== null &&
+        year < fromYear
+      ){
+
+        return false;
+
+      }
+
+      if(
+        toYear !== null &&
+        year > toYear
+      ){
+
+        return false;
+
+      }
+
+      if(
+        selectedTag &&
+        !tags.includes(selectedTag)
+      ){
+
+        return false;
+
+      }
+
+      return true;
+
+    });
+
+  /*
+    Newest first.
+  */
+
+  filtered.sort(
+    (a,b) =>
+      new Date(b.created) -
+      new Date(a.created)
+  );
+
+  if(!filtered.length){
+
+    document.getElementById(
+      "list"
+    ).innerHTML =
+      `<p class="muted">
+        No posts match your filters.
+      </p>`;
+
+    return;
+
+  }
+
+  document.getElementById(
+    "list"
+  ).innerHTML =
+
+    filtered.map(
+      post => {
+
+        const url =
+          "https://peakd.com/@" +
+          post.author +
+          "/" +
+          post.permlink;
+
+        const date =
+          new Date(
+            post.created
+          ).toLocaleString();
+
+        const tags =
+          (
+            post.json_metadata?.tags ||
+            []
+          )
+          .slice(0,8)
+          .map(
+            tag =>
+              "#" + esc(tag)
+          )
+          .join(" ");
+
+        const excerpt =
+          strip(
+            post.body || ""
+          ).slice(0,350);
+
+        return `
+
+          <article class="post">
+
+            <a
+              href="${url}"
+              target="_blank"
+              rel="noopener"
+            >
+              ${esc(
+                post.title ||
+                "(untitled)"
+              )}
+            </a>
+
+            <div class="meta">
+              ${date}
+            </div>
+
+            <div class="excerpt">
+              ${esc(excerpt)}
+              ${excerpt.length >= 350 ? "…" : ""}
+            </div>
+
+            ${
+              tags
+              ? `<div class="tags">
+                   ${tags}
+                 </div>`
+              : ""
+            }
+
+          </article>
+
+        `;
+
+      }
+    )
+    .join("");
+
 }
 
-function strip(s){return (s||"").replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/[#*_>`]/g," ").replace(/\s+/g," ").trim()}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
-function download(name,text,type){
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));
-  a.download=name;a.click();URL.revokeObjectURL(a.href);
+/* =========================================================
+   EXPORT JSON
+========================================================= */
+
+function exportJSON(){
+
+  if(!posts.length){
+
+    alert(
+      "Load an archive first."
+    );
+
+    return;
+
+  }
+
+  download(
+
+    account +
+    "-hive-archive.json",
+
+    JSON.stringify(
+      posts,
+      null,
+      2
+    ),
+
+    "application/json"
+
+  );
+
 }
-function exportJSON(){download(`${account}-hive-archive.json`,JSON.stringify(posts,null,2),"application/json")}
+
+
+/* =========================================================
+   EXPORT MARKDOWN
+========================================================= */
+
 function exportMarkdown(){
-  const md=posts.map(p=>`# ${p.title||"(untitled)"}\n\n**${p.created}**\n\n${p.body||""}\n\n---\n`).join("\n");
-  download(`${account}-hive-archive.md`,md,"text/markdown");
+
+  if(!posts.length){
+
+    alert(
+      "Load an archive first."
+    );
+
+    return;
+
+  }
+
+  const markdown =
+    posts
+      .map(
+        post => {
+
+          return (
+
+            "# " +
+            (post.title || "(untitled)") +
+
+            "\n\n" +
+
+            "**Date:** " +
+            post.created +
+
+            "\n\n" +
+
+            (post.body || "") +
+
+            "\n\n---\n\n"
+
+          );
+
+        }
+      )
+      .join("");
+
+  download(
+
+    account +
+    "-hive-archive.md",
+
+    markdown,
+
+    "text/markdown"
+
+  );
+
 }
+
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+function clearArchive(){
+
+  posts = [];
+
+  account = "";
+
+  document.getElementById(
+    "account"
+  ).value = "";
+
+  document.getElementById(
+    "search"
+  ).value = "";
+
+  document.getElementById(
+    "yearFrom"
+  ).value = "";
+
+  document.getElementById(
+    "yearTo"
+  ).value = "";
+
+  document.getElementById(
+    "tag"
+  ).innerHTML =
+    '<option value="">All tags</option>';
+
+  document.getElementById(
+    "list"
+  ).innerHTML =
+    '<p class="muted">Your posts will appear here.</p>';
+
+  document.getElementById(
+    "postCount"
+  ).textContent = "—";
+
+  document.getElementById(
+    "yearCount"
+  ).textContent = "—";
+
+  document.getElementById(
+    "tagCount"
+  ).textContent = "—";
+
+  document.getElementById(
+    "nodeName"
+  ).textContent = "—";
+
+  setStatus(
+    "Enter a Hive username to begin."
+  );
+
+  document.getElementById(
+    "progress"
+  ).textContent = "";
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function strip(text){
+
+  return (text || "")
+
+    .replace(
+      /!\[[^\]]*\]\([^)]*\)/g,
+      " "
+    )
+
+    .replace(
+      /[#*_>`]/g,
+      " "
+    )
+
+    .replace(
+      /\s+/g,
+      " "
+    )
+
+    .trim();
+
+}
+
+
+function esc(text){
+
+  return String(
+    text ?? ""
+  ).replace(
+    /[&<>"']/g,
+
+    char => ({
+
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+
+    }[char])
+
+  );
+
+}
+
+
+function download(
+  filename,
+  text,
+  type
+){
+
+  const blob =
+    new Blob(
+      [text],
+      {type:type}
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const link =
+    document.createElement("a");
+
+  link.href = url;
+
+  link.download =
+    filename;
+
+  document.body.appendChild(
+    link
+  );
+
+  link.click();
+
+  link.remove();
+
+  URL.revokeObjectURL(url);
+
+}
+
+
+function sleep(ms){
+
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
+  );
+
+}
+
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+initNode();
+
 </script>
+
 </body>
 </html>
