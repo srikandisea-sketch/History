@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hive Personal Archive</title>
+<style>
+:root{--bg:#151412;--panel:#211f1b;--panel2:#292621;--text:#f5efe5;--muted:#aaa196;--line:#3a352d;--accent:#d5a46b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1180px;margin:auto;padding:28px}.top{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:22px}
+h1{margin:0;font-size:30px}.sub{color:var(--muted);margin-top:5px}.search{display:flex;gap:8px}.search input{width:280px}
+input,select,button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px;font:inherit}
+button{cursor:pointer}button.primary{background:var(--accent);color:#191510;border-color:var(--accent);font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.stat b{font-size:24px;display:block}.stat span{color:var(--muted);font-size:12px}
+.layout{display:grid;grid-template-columns:260px 1fr;gap:16px}.card h2{font-size:15px;margin:0 0 12px}.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.list{display:grid;gap:10px}.post{padding:14px;background:var(--panel2);border:1px solid var(--line);border-radius:12px}.post a{color:var(--text);text-decoration:none;font-weight:700}.meta{color:var(--muted);font-size:12px;margin-top:5px}.excerpt{color:#c9c1b7;margin-top:8px;line-height:1.5}.tags{color:var(--accent);font-size:12px;margin-top:8px}.empty{padding:30px;text-align:center;color:var(--muted)}
+.side input{width:100%;margin-bottom:8px}.side button{width:100%}.notice{color:var(--muted);line-height:1.5;font-size:13px;margin-top:12px}
+@media(max-width:800px){.top{display:block}.search{margin-top:14px}.search input{width:100%;flex:1}.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><h1>🗄️ Hive Personal Archive</h1><div class="sub">Search and explore a public Hive account's writing history.</div></div>
+    <div class="search"><input id="account" placeholder="Hive username, e.g. macchiata"><button class="primary" onclick="loadArchive()">Load archive</button></div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><b id="postCount">—</b><span>Posts loaded</span></div>
+    <div class="stat"><b id="commentCount">—</b><span>Replies loaded</span></div>
+    <div class="stat"><b id="yearCount">—</b><span>Years represented</span></div>
+    <div class="stat"><b id="tagCount">—</b><span>Unique tags</span></div>
+  </section>
+
+  <div class="layout">
+    <aside class="card side">
+      <h2>Archive controls</h2>
+      <input id="search" placeholder="Search title or text" oninput="render()">
+      <select id="year" onchange="render()"><option value="">All years</option></select>
+      <select id="tag" onchange="render()"><option value="">All tags</option></select>
+      <button onclick="exportJSON()">Export JSON</button>
+      <button onclick="exportMarkdown()">Export Markdown</button>
+      <div class="notice">This MVP reads public Hive data. It does not request or store your Hive keys.</div>
+    </aside>
+
+    <section class="card">
+      <div class="filters"><strong id="heading">Your archive</strong><span id="status" class="meta"></span></div>
+      <div id="list" class="list"><div class="empty">Enter a Hive username to begin.</div></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const RPC="https://api.hive.blog";
+let posts=[], account="";
+
+async function rpc(method, params){
+  const r=await fetch(RPC,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({jsonrpc:"2.0",method,params,id:1})});
+  const j=await r.json();
+  if(j.error) throw new Error(j.error.message||"Hive API error");
+  return j.result;
+}
+
+async function loadArchive(){
+  account=document.getElementById("account").value.trim().replace(/^@/,"").toLowerCase();
+  if(!account)return;
+  setStatus("Loading…");
+  posts=[];
+  try{
+    // bridge.get_account_posts supports pagination with start_author/start_permlink.
+    let start_author="", start_permlink="";
+    for(let page=0;page<20;page++){
+      const batch=await rpc("bridge.get_account_posts",{
+        sort:"posts",account,start_author,start_permlink,limit:100,observer:account
+      });
+      if(!Array.isArray(batch)||!batch.length)break;
+      posts.push(...batch.filter(x=>x.author===account && x.parent_author===""));
+      const last=batch[batch.length-1];
+      if(!last || !last.author || !last.permlink)break;
+      if(last.author===start_author && last.permlink===start_permlink)break;
+      start_author=last.author; start_permlink=last.permlink;
+      if(batch.length<100)break;
+    }
+    updateControls(); render();
+    setStatus(`${posts.length} posts loaded`);
+  }catch(e){setStatus("Could not load: "+e.message);document.getElementById("list").innerHTML='<div class="empty">Check the username and try again.</div>';}
+}
+
+function setStatus(x){document.getElementById("status").textContent=x}
+
+function updateControls(){
+  const years=[...new Set(posts.map(p=>new Date(p.created).getFullYear()).filter(Boolean))].sort((a,b)=>b-a);
+  const tags=[...new Set(posts.flatMap(p=>p.json_metadata?.tags||[]).filter(t=>typeof t==="string"))].sort();
+  document.getElementById("year").innerHTML='<option value="">All years</option>'+years.map(y=>`<option>${y}</option>`).join("");
+  document.getElementById("tag").innerHTML='<option value="">All tags</option>'+tags.map(t=>`<option>${esc(t)}</option>`).join("");
+  document.getElementById("postCount").textContent=posts.length;
+  document.getElementById("commentCount").textContent="—";
+  document.getElementById("yearCount").textContent=years.length;
+  document.getElementById("tagCount").textContent=tags.length;
+}
+
+function render(){
+  const q=document.getElementById("search").value.toLowerCase();
+  const y=document.getElementById("year").value;
+  const t=document.getElementById("tag").value;
+  const filtered=posts.filter(p=>{
+    const text=(p.title+" "+strip(p.body)).toLowerCase();
+    const tags=p.json_metadata?.tags||[];
+    return (!q||text.includes(q))&&(!y||new Date(p.created).getFullYear()==y)&&(!t||tags.includes(t));
+  });
+  document.getElementById("heading").textContent=`${filtered.length} matching posts`;
+  document.getElementById("list").innerHTML=filtered.length?filtered.map(p=>{
+    const url=`https://peakd.com/@${p.author}/${p.permlink}`;
+    const tags=(p.json_metadata?.tags||[]).slice(0,6).map(esc).join(" · ");
+    return `<article class="post"><a href="${url}" target="_blank" rel="noopener">${esc(p.title||"(untitled)")}</a>
+      <div class="meta">${new Date(p.created).toLocaleDateString()} · ${p.category||""}</div>
+      <div class="excerpt">${esc(strip(p.body).slice(0,280))}${strip(p.body).length>280?"…":""}</div>
+      <div class="tags">${tags}</div></article>`;
+  }).join(""):'<div class="empty">No posts match your filters.</div>';
+}
+
+function strip(s){return (s||"").replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/[#*_>`]/g," ").replace(/\s+/g," ").trim()}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+function download(name,text,type){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));
+  a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+function exportJSON(){download(`${account}-hive-archive.json`,JSON.stringify(posts,null,2),"application/json")}
+function exportMarkdown(){
+  const md=posts.map(p=>`# ${p.title||"(untitled)"}\n\n**${p.created}**\n\n${p.body||""}\n\n---\n`).join("\n");
+  download(`${account}-hive-archive.md`,md,"text/markdown");
+}
+</script>
+</body>
+</html>
