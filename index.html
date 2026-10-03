@@ -1,19 +1,123 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hive Personal Archive</title><style>
 :root{--bg:#151412;--panel:#211f1b;--panel2:#292621;--text:#f5efe5;--muted:#aaa196;--line:#3a352d;--accent:#d5a46b;--bad:#e78b8b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1150px;margin:auto;padding:28px}h1{margin:0 0 5px;font-size:30px}.muted{color:var(--muted)}.top{display:flex;gap:10px;margin:20px 0}.top input{flex:1}input,button,select{padding:11px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit}button{cursor:pointer}button.primary{background:var(--accent);color:#191510;font-weight:700}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.stat{background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:10px}.stat b{display:block;font-size:24px}.grid{display:grid;grid-template-columns:260px 1fr;gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.side input,.side select,.side button{width:100%;margin:5px 0}.year-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.post{margin:10px 0;padding:15px;background:var(--panel2);border-radius:10px}.post a{color:var(--text);font-weight:700;text-decoration:none}.post a:hover{color:var(--accent)}.meta{font-size:12px;color:var(--muted);margin-top:5px}.excerpt{margin-top:8px;color:#ccc;line-height:1.5}.tags{color:var(--accent);font-size:12px;margin-top:8px}.status{padding:10px;background:var(--panel2);border-radius:9px;margin-bottom:10px}.error{color:var(--bad)}.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:14px}@media(max-width:700px){main{padding:16px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.top{flex-wrap:wrap}.top input{width:100%}}
-</style></head><body><main><h1>🗄️ Hive Personal Archive</h1><p class="muted">Search and explore a public Hive account's writing history.</p><div class="top"><input id="account" placeholder="Hive username, e.g. hivebookclub"><button id="load" class="primary">Load Archive</button></div><div class="stats"><div class="stat"><b id="postCount">—</b>Posts</div><div class="stat"><b id="yearCount">—</b>Years</div><div class="stat"><b id="tagCount">—</b>Tags</div><div class="stat"><b id="nodeName">—</b>API node</div></div><div class="grid"><aside class="card"><b>Hive API node</b><select id="node"><option value="auto">Auto / failover</option><option value="https://api.hive.blog">api.hive.blog</option><option value="https://api.openhive.network">api.openhive.network</option><option value="https://anyx.io">anyx.io</option><option value="https://api.deathwing.me">api.deathwing.me</option><option value="https://hive.roelandp.nl">hive.roelandp.nl</option></select><b>Search</b><input id="search" placeholder="Search posts"><b>Year range</b><div class="year-row"><input id="yearFrom" type="number" placeholder="From"><input id="yearTo" type="number" placeholder="To"></div><b>Tag</b><select id="tag"><option value="">All tags</option></select><button id="json">Export JSON</button><button id="md">Export Markdown</button><button id="clear">Clear</button><div class="notice">Public Hive data only. No private keys. The loader uses Hive's documented <code>bridge.get_account_posts</code> method and paginates 20 records at a time.</div></aside><section class="card"><div id="status" class="status">Enter a Hive username to begin.</div><div id="progress" class="muted"></div><div id="list"><p class="muted">Your posts will appear here.</p></div></section></div></main><script>
+</style></head><body><main><h1>🗄️ Hive Personal Archive</h1><p class="muted">Search and explore a public Hive account's writing history.</p><div class="top"><input id="account" placeholder="Hive username, e.g. hivebookclub"><button id="load" class="primary">Load 10/15</button><button id="next">Next batch</button><button id="auto">Auto load</button><button id="pause">Pause</button><button id="stop">Stop</button></div><div class="stats"><div class="stat"><b id="postCount">—</b>Posts</div><div class="stat"><b id="yearCount">—</b>Years</div><div class="stat"><b id="tagCount">—</b>Tags</div><div class="stat"><b id="nodeName">—</b>API node</div></div><div class="grid"><aside class="card"><b>Hive API node</b><select id="node"><option value="auto">Auto / failover</option><option value="https://api.hive.blog">api.hive.blog</option><option value="https://api.openhive.network">api.openhive.network</option><option value="https://anyx.io">anyx.io</option><option value="https://api.deathwing.me">api.deathwing.me</option><option value="https://hive.roelandp.nl">hive.roelandp.nl</option></select><b>Batch size</b><select id="batchSize"><option value="10">10 posts</option><option value="15">15 posts</option></select><b>Search</b><input id="search" placeholder="Search posts"><b>Year range</b><div class="year-row"><input id="yearFrom" type="number" placeholder="From"><input id="yearTo" type="number" placeholder="To"></div><b>Tag</b><select id="tag"><option value="">All tags</option></select><button id="json">Export JSON</button><button id="md">Export Markdown</button><button id="clear">Clear</button><div class="notice">Public Hive data only. No private keys. The loader fetches only 10 or 15 posts per batch. Use Next batch for controlled loading, or Auto load with Pause/Stop.</div></aside><section class="card"><div id="status" class="status">Enter a Hive username to begin.</div><div id="progress" class="muted"></div><div id="list"><p class="muted">Your posts will appear here.</p></div></section></div></main><script>
 "use strict";
 const NODES=["https://api.hive.blog","https://api.openhive.network","https://anyx.io","https://api.deathwing.me","https://hive.roelandp.nl"];
-let posts=[],account="";
+let posts=[],account="",startAuthor="",startPermlink="",finished=false,paused=false,stopped=false,autoRunning=false;
 const $=id=>document.getElementById(id);
-function setStatus(msg,bad=false){$("status").textContent=msg;$("status").className=bad?"status error":"status"}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
-function nodes(){const v=$("node").value;return v==="auto"?NODES:[v,...NODES.filter(x=>x!==v)]}
-async function rpc(method,params){let last="Unknown API error";for(const node of nodes()){try{setStatus("Connecting to "+new URL(node).hostname+" …");const c=new AbortController();const timer=setTimeout(()=>c.abort(),15000);const r=await fetch(node,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",method,params,id:1}),signal:c.signal});clearTimeout(timer);if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();if(j.error)throw new Error(j.error.message||"Hive RPC error");$("nodeName").textContent=new URL(node).hostname;return j.result}catch(e){last=e.name==="AbortError"?"timeout":e.message;console.warn(node,last)}}throw new Error(last+" — all selected Hive nodes failed")}
-async function loadArchive(){account=$("account").value.trim().replace(/^@/,"").toLowerCase();if(!account){setStatus("Enter a Hive username first.",true);return}posts=[];$("list").innerHTML="";$("postCount").textContent="0";$("yearCount").textContent="0";$("tagCount").textContent="0";$("progress").textContent="Checking account…";try{const profile=await rpc("bridge.get_profile",{account:account});if(!profile||profile.name!==account)throw new Error("Hive account not found: @"+account);let start_author="",start_permlink="",page=0;while(true){page++;$("progress").textContent="Loading page "+page+" … "+posts.length+" posts";const params={sort:"posts",account:account,start_author:start_author,start_permlink:start_permlink,limit:20};const batch=await rpc("bridge.get_account_posts",params);if(!Array.isArray(batch)||batch.length===0)break;for(const p of batch){if(p.author===account&&p.parent_author==="")posts.push(p)}const last=batch[batch.length-1];if(!last||(!last.author&&!last.permlink))break;if(last.author===start_author&&last.permlink===start_permlink)break;start_author=last.author;start_permlink=last.permlink;if(batch.length<20)break;await sleep(120)}updateFilters();render();setStatus("Loaded "+posts.length+" posts for @"+account);$("progress").textContent="Archive complete."}catch(e){setStatus("Could not load: "+e.message,true);$("progress").textContent="If you are using a preview/editor, open the deployed site in a normal browser tab and try again."}}
-function updateFilters(){const years=[...new Set(posts.map(p=>new Date(p.created).getFullYear()).filter(Boolean))];const tags=[...new Set(posts.flatMap(p=>p.json_metadata?.tags||[]).filter(t=>typeof t==="string"))].sort();$("postCount").textContent=posts.length;$("yearCount").textContent=years.length;$("tagCount").textContent=tags.length;$("tag").innerHTML='<option value="">All tags</option>'+tags.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join("")}
-function render(){const q=$("search").value.toLowerCase().trim(),from=$("yearFrom").value?Number($("yearFrom").value):null,to=$("yearTo").value?Number($("yearTo").value):null,tag=$("tag").value;const out=posts.filter(p=>{const y=new Date(p.created).getFullYear(),text=((p.title||"")+" "+strip(p.body||"")).toLowerCase(),tags=p.json_metadata?.tags||[];return(!q||text.includes(q))&&(from===null||y>=from)&&(to===null||y<=to)&&(!tag||tags.includes(tag))}).sort((a,b)=>new Date(b.created)-new Date(a.created));if(!out.length){$("list").innerHTML='<p class="muted">No posts match the current filters.</p>';return}$("list").innerHTML=out.map(p=>{const url="https://peakd.com/@"+p.author+"/"+p.permlink,ex=strip(p.body||"").slice(0,350),tags=(p.json_metadata?.tags||[]).slice(0,8).map(t=>"#"+esc(t)).join(" ");return '<article class="post"><a href="'+url+'" target="_blank" rel="noopener">'+esc(p.title||"(untitled)")+'</a><div class="meta">'+new Date(p.created).toLocaleString()+"</div><div class="excerpt">"+esc(ex)+(ex.length>=350?"…":"")+'</div>'+(tags?'<div class="tags">'+tags+'</div>':"")+"</article>"}).join("")}
-function strip(s){return(s||"").replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/[#*_>`]/g," ").replace(/\s+/g," ").trim()}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[c]))}
-function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
-$("load").addEventListener("click",loadArchive);$("account").addEventListener("keydown",e=>{if(e.key==="Enter")loadArchive()});["search","yearFrom","yearTo"].forEach(id=>$(id).addEventListener("input",render));$("tag").addEventListener("change",render);$("node").addEventListener("change",()=>localStorage.setItem("hiveArchiveNode",$("node").value));$("json").addEventListener("click",()=>posts.length&&download(account+"-hive-archive.json",JSON.stringify(posts,null,2),"application/json"));$("md").addEventListener("click",()=>posts.length&&download(account+"-hive-archive.md",posts.map(p=>"# "+(p.title||"(untitled)")+"\n\n**"+p.created+"**\n\n"+(p.body||"")+"\n\n---\n\n").join(""),"text/markdown"));$("clear").addEventListener("click",()=>location.reload());const saved=localStorage.getItem("hiveArchiveNode");if(saved&&["auto",...NODES].includes(saved))$("node").value=saved;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function setStatus(m,bad=false){$("status").textContent=m;$("status").className=bad?"status error":"status";}
+function nodeList(){const v=$("node").value;return v==="auto"?NODES:[v,...NODES.filter(n=>n!==v)];}
+async function rpc(method,params){
+ let last="Unknown API error";
+ for(const node of nodeList()){
+  try{
+   setStatus("Connecting to "+new URL(node).hostname+" …");
+   const c=new AbortController(),timer=setTimeout(()=>c.abort(),15000);
+   const r=await fetch(node,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",method,params,id:1}),signal:c.signal});
+   clearTimeout(timer);
+   if(!r.ok) throw new Error("HTTP "+r.status);
+   const j=await r.json();
+   if(j.error) throw new Error(j.error.message||"Hive RPC error");
+   $("nodeName").textContent=new URL(node).hostname;
+   return j.result;
+  }catch(e){last=e.name==="AbortError"?"timeout":e.message;console.warn(node,last);}
+ }
+ throw new Error(last+" — all selected Hive nodes failed");
+}
+async function ensureAccount(){
+ if(account) return true;
+ account=$("account").value.trim().replace(/^@/,"").toLowerCase();
+ if(!account){setStatus("Enter a Hive username first.",true);return false;}
+ try{
+  setStatus("Checking @"+account+" …");
+  const profile=await rpc("bridge.get_profile",{account});
+  if(!profile || profile.name!==account) throw new Error("Hive account not found: @"+account);
+  return true;
+ }catch(e){setStatus("Could not load: "+e.message,true);return false;}
+}
+async function loadBatch(){
+ if(finished || stopped){setStatus(finished?"Archive is complete.":"Loading is stopped. Click Load 10/15 to start again.");return false;}
+ if(paused){setStatus("Paused. Click Resume to continue.");return false;}
+ if(!(await ensureAccount())) return false;
+ const limit=Number($("batchSize").value)||10;
+ try{
+  setStatus(`Loading ${limit} posts…`);
+  const batch=await rpc("bridge.get_account_posts",{sort:"posts",account,start_author:startAuthor,start_permlink:startPermlink,limit});
+  if(!Array.isArray(batch)||batch.length===0){finished=true;setStatus(`Archive complete — ${posts.length} posts loaded.`);$("progress").textContent="No more posts returned by Hive.";updateFilters();render();return false;}
+  for(const p of batch) if(p.author===account && p.parent_author==="") posts.push(p);
+  const last=batch[batch.length-1];
+  if(!last||!last.author||!last.permlink){finished=true;}
+  else if(last.author===startAuthor && last.permlink===startPermlink){finished=true;}
+  else {startAuthor=last.author;startPermlink=last.permlink;}
+  if(batch.length<limit) finished=true;
+  updateFilters();render();
+  $("progress").textContent=`Loaded ${posts.length} posts. ${finished?"Archive complete.":"Ready for next batch."}`;
+  setStatus(finished?`Archive complete — ${posts.length} posts loaded.`:`Loaded ${batch.length} more. ${posts.length} total.`);
+  return !finished;
+ }catch(e){setStatus("Could not load: "+e.message,true);$("progress").textContent="Loading paused because the request failed.";return false;}
+}
+async function startFresh(){
+ posts=[];startAuthor="";startPermlink="";finished=false;stopped=false;paused=false;autoRunning=false;
+ $("list").innerHTML="";$("postCount").textContent="0";$("yearCount").textContent="0";$("tagCount").textContent="0";
+ await loadBatch();
+}
+async function autoLoad(){
+ if(autoRunning)return;
+ if(!account){if(!(await ensureAccount()))return;}
+ stopped=false;paused=false;autoRunning=true;$("pause").textContent="Pause";
+ while(autoRunning&&!stopped&&!finished){
+  if(paused){await sleep(250);continue;}
+  const more=await loadBatch();
+  if(!more) break;
+  await sleep(1500);
+ }
+ autoRunning=false;
+}
+function pauseLoad(){
+ if(!autoRunning){paused=!paused;$("pause").textContent=paused?"Resume":"Pause";setStatus(paused?"Paused.":"Ready.");return;}
+ paused=!paused;$("pause").textContent=paused?"Resume":"Pause";setStatus(paused?"Paused between batches.":"Resuming…");
+}
+function stopLoad(){stopped=true;autoRunning=false;paused=false;$("pause").textContent="Pause";setStatus("Stopped. Your loaded posts are kept.");$("progress").textContent="Click Next batch or Auto load to continue.";}
+function updateFilters(){
+ const years=[...new Set(posts.map(p=>new Date(p.created).getFullYear()).filter(Boolean))].sort((a,b)=>a-b);
+ const tags=[...new Set(posts.flatMap(p=>Array.isArray(p.json_metadata?.tags)?p.json_metadata.tags:[]).filter(t=>typeof t==="string"))].sort();
+ $("postCount").textContent=posts.length;$("yearCount").textContent=years.length;$("tagCount").textContent=tags.length;
+ $("tag").innerHTML='<option value="">All tags</option>'+tags.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+}
+function render(){
+ const q=$("search").value.toLowerCase().trim(),from=$("yearFrom").value?Number($("yearFrom").value):null,to=$("yearTo").value?Number($("yearTo").value):null,tag=$("tag").value;
+ const out=posts.filter(p=>{const y=new Date(p.created).getFullYear(),text=((p.title||"")+" "+strip(p.body||"")).toLowerCase(),tags=Array.isArray(p.json_metadata?.tags)?p.json_metadata.tags:[];return(!q||text.includes(q))&&(from===null||y>=from)&&(to===null||y<=to)&&(!tag||tags.includes(tag));}).sort((a,b)=>new Date(b.created)-new Date(a.created));
+ if(!out.length){$("list").innerHTML='<p class="muted">No posts match the current filters.</p>';return;}
+ $("list").innerHTML=out.map(p=>{const url=`https://peakd.com/@${encodeURIComponent(p.author)}/${encodeURIComponent(p.permlink)}`,ex=strip(p.body||"").slice(0,350),tags=(Array.isArray(p.json_metadata?.tags)?p.json_metadata.tags:[]).slice(0,8).map(t=>"#"+esc(t)).join(" ");return `<article class="post"><a href="${url}" target="_blank" rel="noopener">${esc(p.title||"(untitled)")}</a><div class="meta">${esc(new Date(p.created).toLocaleString())}</div><div class="excerpt">${esc(ex)}${ex.length>=350?"…":""}</div>${tags?`<div class="tags">${tags}</div>`:""}</article>`;}).join("");
+}
+function strip(s){return String(s||"").replace(/!\[[^\]]*\]\([^)]*\)/g," ").replace(/[#*_>`]/g," ").replace(/\s+/g," ").trim();}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function exportJSON(){if(posts.length)download(account+"-hive-archive.json",JSON.stringify(posts,null,2),"application/json");}
+function exportMarkdown(){if(posts.length)download(account+"-hive-archive.md",posts.map(p=>`# ${p.title||"(untitled)"}\n\n**${p.created}**\n\n${p.body||""}\n\n---\n\n`).join(""),"text/markdown");}
+$("load").addEventListener("click",startFresh);
+$("next").addEventListener("click",async()=>{stopped=false;await loadBatch();});
+$("auto").addEventListener("click",autoLoad);
+$("pause").addEventListener("click",pauseLoad);
+$("stop").addEventListener("click",stopLoad);
+$("account").addEventListener("keydown",e=>{if(e.key==="Enter")startFresh();});
+["search","yearFrom","yearTo"].forEach(id=>$(id).addEventListener("input",render));
+$("tag").addEventListener("change",render);
+$("node").addEventListener("change",()=>localStorage.setItem("hiveArchiveNode",$("node").value));
+$("json").addEventListener("click",exportJSON);$("md").addEventListener("click",exportMarkdown);
+$("clear").addEventListener("click",()=>location.reload());
+const saved=localStorage.getItem("hiveArchiveNode");if(saved&&["auto",...NODES].includes(saved))$("node").value=saved;
+
+function setTheme(theme){
+  if(theme === "light") document.body.classList.add("light");
+  else { document.body.classList.remove("light"); theme="dark"; }
+  localStorage.setItem("hiveArchiveTheme", theme);
+}
+function initTheme(){
+  const saved=localStorage.getItem("hiveArchiveTheme");
+  if(saved) return setTheme(saved);
+  setTheme(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+}
+initTheme();
 </script></body></html>
