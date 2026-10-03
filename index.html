@@ -1,6 +1,98 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hive Personal Archive</title><style>
-:root{--bg:#151412;--panel:#211f1b;--panel2:#292621;--text:#f5efe5;--muted:#aaa196;--line:#3a352d;--accent:#d5a46b;--bad:#e78b8b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1150px;margin:auto;padding:28px}h1{margin:0 0 5px;font-size:30px}.muted{color:var(--muted)}.top{display:flex;gap:10px;margin:20px 0}.top input{flex:1}input,button,select{padding:11px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit}button{cursor:pointer}button.primary{background:var(--accent);color:#191510;font-weight:700}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.stat{background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:10px}.stat b{display:block;font-size:24px}.grid{display:grid;grid-template-columns:260px 1fr;gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.side input,.side select,.side button{width:100%;margin:5px 0}.year-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.post{margin:10px 0;padding:15px;background:var(--panel2);border-radius:10px}.post a{color:var(--text);font-weight:700;text-decoration:none}.post a:hover{color:var(--accent)}.meta{font-size:12px;color:var(--muted);margin-top:5px}.excerpt{margin-top:8px;color:#ccc;line-height:1.5}.tags{color:var(--accent);font-size:12px;margin-top:8px}.status{padding:10px;background:var(--panel2);border-radius:9px;margin-bottom:10px}.error{color:var(--bad)}.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:14px}@media(max-width:700px){main{padding:16px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.top{flex-wrap:wrap}.top input{width:100%}}
-</style></head><body><main><h1>🗄️ Hive Personal Archive</h1><p class="muted">Search and explore a public Hive account's writing history.</p><div class="top"><input id="account" placeholder="Hive username, e.g. hivebookclub"><button id="load" class="primary">Load 10/15</button><button id="next">Next batch</button><button id="auto">Auto load</button><button id="pause">Pause</button><button id="stop">Stop</button></div><div class="stats"><div class="stat"><b id="postCount">—</b>Posts</div><div class="stat"><b id="yearCount">—</b>Years</div><div class="stat"><b id="tagCount">—</b>Tags</div><div class="stat"><b id="nodeName">—</b>API node</div></div><div class="grid"><aside class="card"><b>Hive API node</b><select id="node"><option value="auto">Auto / failover</option><option value="https://api.hive.blog">api.hive.blog</option><option value="https://api.openhive.network">api.openhive.network</option><option value="https://anyx.io">anyx.io</option><option value="https://api.deathwing.me">api.deathwing.me</option><option value="https://hive.roelandp.nl">hive.roelandp.nl</option></select><button id="testApi" type="button">Test API</button><b>Batch size</b><select id="batchSize"><option value="10">10 posts</option><option value="15">15 posts</option></select><b>Search</b><input id="search" placeholder="Search posts"><b>Year range</b><div class="year-row"><input id="yearFrom" type="number" placeholder="From"><input id="yearTo" type="number" placeholder="To"></div><b>Tag</b><select id="tag"><option value="">All tags</option></select><button id="json">Export JSON</button><button id="md">Export Markdown</button><button id="clear">Clear</button><div class="notice">Public Hive data only. No private keys. The loader fetches only 10 or 15 posts per batch. Use Next batch for controlled loading, or Auto load with Pause/Stop.</div></aside><section class="card"><div id="status" class="status">Enter a Hive username to begin.</div><div id="progress" class="muted"></div><div id="list"><p class="muted">Your posts will appear here.</p></div></section></div></main><script>
+:root{--bg:#151412;--panel:#211f1b;--panel2:#292621;--text:#f5efe5;--muted:#aaa196;--line:#3a352d;--accent:#d5a46b;--bad:#e78b8b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1150px;margin:auto;padding:28px}h1{margin:0 0 5px;font-size:30px}.muted{color:var(--muted)}.top{display:flex;gap:10px;margin:20px 0}.top input{flex:1}input,button,select{padding:11px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:inherit}button{cursor:pointer}button.primary{background:var(--accent);color:#191510;font-weight:700}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.stat{background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:10px}.stat b{display:block;font-size:24px}.grid{display:grid;grid-template-columns:260px 1fr;gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px}.side input,.side select,.side button{width:100%;margin:5px 0}.year-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.post{margin:10px 0;padding:15px;background:var(--panel2);border-radius:10px}.post a{color:var(--text);font-weight:700;text-decoration:none}.post a:hover{color:var(--accent)}.meta{font-size:12px;color:var(--muted);margin-top:5px}.excerpt{margin-top:8px;color:#ccc;line-height:1.5}.tags{color:var(--accent);font-size:12px;margin-top:8px}.status{padding:10px;background:var(--panel2);border-radius:9px;margin-bottom:10px}.error{color:var(--bad)}
+.pagination{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  margin:10px 0;
+}
+
+.pagination button{
+  min-width:34px;
+  padding:6px 10px;
+  border-radius:999px;
+}
+
+.pagination .active{
+  background:var(--accent);
+  color:#191510;
+  border-color:var(--accent);
+}
+
+.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:14px}@media(max-width:700px){main{padding:16px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.top{flex-wrap:wrap}.top input{width:100%}}
+
+/* Compact archive controls */
+.side{
+  max-width:260px;
+}
+
+.side label{
+  display:block;
+  margin:12px 0 5px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+
+.year-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
+}
+
+.year-row input{
+  width:82px !important;
+  flex:0 0 82px;
+  padding:7px 9px;
+  font-size:13px;
+  border-radius:8px;
+}
+
+.year-row::after{
+  content:"";
+  display:block;
+  width:8px;
+  height:1px;
+  background:var(--muted);
+  order:1;
+}
+
+.year-row input:first-child{
+  order:0;
+}
+
+.year-row input:last-child{
+  order:2;
+}
+
+.side select,
+.side > input{
+  padding:8px 9px;
+  font-size:13px;
+  border-radius:8px;
+}
+
+.side button{
+  width:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin:4px 3px 0 0;
+  padding:7px 10px;
+  font-size:12px;
+  border-radius:999px;
+}
+
+#testApi{
+  width:100%;
+  margin-top:7px;
+}
+
+</style></head><body><main><h1>🗄️ Hive Personal Archive</h1><p class="muted">Search and explore a public Hive account's writing history.</p><div class="top"><input id="account" placeholder="Hive username, e.g. hivebookclub"><button id="load" class="primary">Load 10/15</button><button id="next">Next batch</button><button id="auto">Auto load</button><button id="pause">Pause</button><button id="stop">Stop</button></div><div class="stats"><div class="stat"><b id="postCount">—</b>Posts</div><div class="stat"><b id="yearCount">—</b>Years</div><div class="stat"><b id="tagCount">—</b>Tags</div><div class="stat"><b id="nodeName">—</b>API node</div></div><div class="grid"><aside class="card"><b>Hive API node</b><select id="node"><option value="auto">Auto / failover</option><option value="https://api.hive.blog">api.hive.blog</option><option value="https://api.openhive.network">api.openhive.network</option><option value="https://anyx.io">anyx.io</option><option value="https://api.deathwing.me">api.deathwing.me</option><option value="https://hive.roelandp.nl">hive.roelandp.nl</option></select><button id="testApi" type="button">Test API</button><b>Batch size</b><select id="batchSize"><option value="10">10 posts</option><option value="15">15 posts</option></select><b>Search</b><input id="search" placeholder="Search posts"><b>Year range</b><div class="year-row"><input id="yearFrom" type="number" placeholder="From"><input id="yearTo" type="number" placeholder="To"></div><b>Tag</b><select id="tag"><option value="">All tags</option></select><button id="json">Export JSON</button><button id="md">Export Markdown</button><button id="pdf">Export PDF</button><button id="clear">Clear</button><div class="notice">Public Hive data only. No private keys. The loader fetches only 10 or 15 posts per batch. Use Next batch for controlled loading, or Auto load with Pause/Stop.</div></aside><section class="card"><div id="status" class="status">Enter a Hive username to begin.</div><div id="progress" class="muted"></div><div id="list"><p class="muted">Your posts will appear here.</p></div></section></div></main><script>
 "use strict";
 const NODES=["https://api.hive.blog","https://api.openhive.network","https://anyx.io","https://api.deathwing.me","https://hive.roelandp.nl"];
 let posts=[],account="",startAuthor="",startPermlink="",finished=false,paused=false,stopped=false,autoRunning=false;
@@ -91,19 +183,27 @@ async function testAPI(){
 }
 
 async function ensureAccount(){
- if(account) return true;
-
- account=$("account").value
+ const entered=$("account").value
    .trim()
    .replace(/^@/,"")
    .toLowerCase();
 
- if(!account){
+ if(!entered){
    setStatus(
      "Enter a Hive username first.",
      true
    );
    return false;
+ }
+
+ /*
+   IMPORTANT:
+   If the user changes the username, never
+   reuse the previous account's archive.
+ */
+ if(entered !== account){
+   resetArchiveState();
+   account=entered;
  }
 
  try{
@@ -336,6 +436,26 @@ async function loadBatch(){
  }
 }
 
+function resetArchiveState(){
+ posts=[];
+ startAuthor="";
+ startPermlink="";
+ finished=false;
+ paused=false;
+ stopped=false;
+
+ $("list").innerHTML=
+   '<p class="muted">No archive loaded.</p>';
+
+ $("progress").textContent="";
+ $("postCount").textContent="—";
+ $("yearCount").textContent="—";
+ $("tagCount").textContent="—";
+
+ $("tag").innerHTML=
+   '<option value="">All tags</option>';
+}
+
 async function startFresh(){
  posts=[];startAuthor="";startPermlink="";finished=false;stopped=false;paused=false;autoRunning=false;
  $("list").innerHTML="";$("postCount").textContent="0";$("yearCount").textContent="0";$("tagCount").textContent="0";
@@ -385,9 +505,105 @@ $("account").addEventListener("keydown",e=>{if(e.key==="Enter")startFresh();});
 $("tag").addEventListener("change",render);
 $("node").addEventListener("change",()=>localStorage.setItem("hiveArchiveNode",$("node").value));
 $("testApi").addEventListener("click",testAPI);
-$("json").addEventListener("click",exportJSON);$("md").addEventListener("click",exportMarkdown);
+$("json").addEventListener("click",exportJSON);$("md").addEventListener("click",exportMarkdown);$("pdf").addEventListener("click",exportPDF);
 $("clear").addEventListener("click",()=>location.reload());
 const saved=localStorage.getItem("hiveArchiveNode");if(saved&&["auto",...NODES].includes(saved))$("node").value=saved;
+
+
+function markdownToPrintHTML(md){
+  let t=esc(md||"");
+  t=t.replace(/!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,'<img src="$2" alt="$1">');
+  t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2">$1</a>');
+  t=t.replace(/^### (.*)$/gm,'<h3>$1</h3>');
+  t=t.replace(/^## (.*)$/gm,'<h2>$1</h2>');
+  t=t.replace(/^# (.*)$/gm,'<h1>$1</h1>');
+  t=t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  t=t.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g,'<em>$1</em>');
+  t=t.replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>');
+  t=t.replace(/^[-*] (.*)$/gm,'<li>$1</li>');
+  t=t.replace(/(?:<li>.*<\/li>\n?)+/g,m=>'<ul>'+m+'</ul>');
+  return t.split(/\n{2,}/).map(b=>{
+    b=b.trim();
+    if(!b) return '';
+    if(/^<(h1|h2|h3|ul|blockquote|img)/.test(b)) return b;
+    return '<p>'+b.replace(/\n/g,'<br>')+'</p>';
+  }).join('\n');
+}
+
+function exportPDF(){
+  if(!posts.length){
+    alert("Load an archive first.");
+    return;
+  }
+
+  const from=$("yearFrom").value.trim();
+  const to=$("yearTo").value.trim();
+  const q=$("search").value.toLowerCase().trim();
+  const tag=$("tag").value;
+  const fy=from?Number(from):null;
+  const ty=to?Number(to):null;
+
+  const selected=posts.filter(p=>{
+    const year=new Date(p.created).getFullYear();
+    const text=((p.title||'')+' '+strip(p.body||'')).toLowerCase();
+    const tags=p.json_metadata?.tags||[];
+    return (!q||text.includes(q)) &&
+           (fy===null||year>=fy) &&
+           (ty===null||year<=ty) &&
+           (!tag||tags.includes(tag));
+  }).sort((a,b)=>new Date(a.created)-new Date(b.created));
+
+  if(!selected.length){
+    alert("No articles match the current filters.");
+    return;
+  }
+
+  const win=window.open("","_blank");
+  if(!win){
+    alert("Please allow pop-ups for this site to export the PDF.");
+    return;
+  }
+
+  const articles=selected.map(p=>{
+    const tags=(p.json_metadata?.tags||[]).map(x=>"#"+esc(x)).join(" ");
+    const url="https://peakd.com/@"+p.author+"/"+p.permlink;
+    return `
+      <article class="article">
+        <h1>${esc(p.title||"(untitled)")}</h1>
+        <div class="meta">${esc(p.author)} · ${new Date(p.created).toLocaleString()}</div>
+        ${tags?`<div class="tags">${tags}</div>`:""}
+        <div class="body">${markdownToPrintHTML(p.body||"")}</div>
+        <div class="source">Original: ${esc(url)}</div>
+      </article>`;
+  }).join("");
+
+  win.document.write(`<!doctype html>
+<html><head><meta charset="utf-8"><title>Hive Archive - @${esc(account)}</title>
+<style>
+@page{size:A4;margin:17mm 15mm}
+body{font-family:Georgia,"Times New Roman",serif;color:#222;line-height:1.65;font-size:11pt}
+.article{page-break-after:always}
+.article:last-child{page-break-after:auto}
+h1{font-family:Arial,sans-serif;font-size:24pt;line-height:1.2;margin:0 0 7pt}
+h2{font-size:17pt;margin-top:20pt}
+h3{font-size:14pt}
+.meta,.tags,.source{font-family:Arial,sans-serif;font-size:9pt;color:#666}
+.tags{margin:8pt 0 18pt;color:#765329}
+.body p{margin:0 0 12pt}
+.body img{max-width:100%;height:auto;display:block;margin:14pt auto;page-break-inside:avoid}
+.body blockquote{border-left:3px solid #aaa;padding-left:12pt;color:#555}
+.body pre{white-space:pre-wrap;background:#eee;padding:10pt}
+.body table{border-collapse:collapse;width:100%}
+.body th,.body td{border:1px solid #aaa;padding:5pt}
+.source{margin-top:24pt;padding-top:8pt;border-top:1px solid #ccc;word-break:break-all}
+</style></head><body>
+<h1>Hive Personal Archive — @${esc(account)}</h1>
+<p>${selected.length} full article${selected.length===1?'':'s'}</p>
+${articles}
+<script>window.onload=function(){setTimeout(function(){window.print()},500)};<\/script>
+</body></html>`);
+  win.document.close();
+}
 
 function setTheme(theme){
   if(theme === "light") document.body.classList.add("light");
