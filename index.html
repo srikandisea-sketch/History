@@ -72,7 +72,7 @@ async function loadArchive(){
     let start_author="", start_permlink="";
     for(let page=0;page<20;page++){
       const batch=await rpc("bridge.get_account_posts",{
-        sort:"posts",account,start_author,start_permlink,limit:100,observer:account
+        sort:"posts",account,start_author,start_permlink,limit:20,observer:account
       });
       if(!Array.isArray(batch)||!batch.length)break;
       posts.push(...batch.filter(x=>x.author===account && x.parent_author===""));
